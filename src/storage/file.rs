@@ -1,4 +1,5 @@
 use crate::blockchain::block::Block;
+use crate::blockchain::chain::Blockchain;
 use serde_json;
 use std::fs;
 
@@ -9,9 +10,11 @@ pub fn save_chain(chain: &[Block]) {
     fs::write(CHAIN_FILE, json).unwrap();
 }
 
-pub fn load_chain() -> Vec<Block> {
+pub fn load_chain() -> Blockchain {
     let data = fs::read_to_string(CHAIN_FILE).unwrap_or_else(|_| "[]".to_string());
-    serde_json::from_str(&data).unwrap()
+    Blockchain {
+        blocks: serde_json::from_str(&data).unwrap(),
+    }
 }
 
 #[cfg(test)]
@@ -26,9 +29,13 @@ mod tests {
         save_chain(&chain.blocks);
         let loaded = load_chain();
 
-        assert_eq!(loaded.len(), 1, "Loaded chain must have exactly one block");
         assert_eq!(
-            loaded[0].block_hash, chain.blocks[0].block_hash,
+            loaded.blocks.len(),
+            1,
+            "Loaded chain must have exactly one block"
+        );
+        assert_eq!(
+            loaded.blocks[0].block_hash, chain.blocks[0].block_hash,
             "Genesis block hash must survive persistence"
         );
     }
