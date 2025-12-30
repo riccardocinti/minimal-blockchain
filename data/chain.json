@@ -2,10 +2,7 @@
   {
     "height": 0,
     "previous_hash": "GENESIS",
-    "timestamp": 0,
-    "merkle_root": "",
     "transactions": [],
-    "nonce": 0,
     "block_hash": ""
   }
 ]

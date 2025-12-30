@@ -48,6 +48,10 @@ impl Block {
         }
     }
 
+    pub fn is_hash_valid(&self) -> bool {
+        self.block_hash == Self::compute_hash(&self.height, &self.previous_hash, &self.transactions)
+    }
+
     fn compute_hash(
         height: &u64,
         previous_hash: &String,
