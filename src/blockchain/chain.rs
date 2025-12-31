@@ -25,6 +25,25 @@ impl Blockchain {
         Ok(())
     }
 
+    pub fn validate(&self) -> Result<(), ChainError> {
+        if self.blocks.is_empty() {
+            return Err(ChainError::EmptyChain);
+        }
+        if self.blocks[0] != Block::genesis() {
+            return Err(ChainError::InvalidGenesis);
+        }
+
+        for pair in self.blocks.windows(2) {
+            let prev = &pair[0];
+            let curr = &pair[1];
+            Self::check_height(prev, curr)?;
+            Self::check_previous_hash(prev, curr)?;
+            Self::check_block_hash(curr)?;
+        }
+
+        Ok(())
+    }
+
     fn check_height(tip: &Block, block: &Block) -> Result<(), ChainError> {
         (block.height == tip.height + 1)
             .then_some(())
@@ -55,6 +74,8 @@ pub enum ChainError {
     InvalidPreviousHash,
     InvalidBlockHash,
     GenesisAlreadyExists,
+    EmptyChain,
+    InvalidGenesis,
 }
 
 #[cfg(test)]

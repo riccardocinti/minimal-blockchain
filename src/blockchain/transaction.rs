@@ -1,8 +1,7 @@
 use crate::crypto::hash::sha256;
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
-#[derive(Hash)]
+#[derive(Debug, Clone, Serialize, Deserialize, Hash, PartialEq)]
 pub struct Transaction {
     pub tx_id: String,
     pub payload: Vec<u8>,

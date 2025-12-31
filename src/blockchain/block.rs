@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 use std::hash::{Hash, Hasher};
 
 const GENESIS_BLOCK_HASH: &str = "GENESIS";
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct Block {
     pub height: u64,
     pub previous_hash: String,
