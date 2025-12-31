@@ -56,6 +56,17 @@ impl Blockchain {
         Ok(chain)
     }
 
+    pub fn try_replace(&mut self, candidate: Blockchain) -> Result<bool, ChainError> {
+        candidate.validate()?;
+        match candidate.tip().height > self.tip().height {
+            true => {
+                self.blocks = candidate.blocks;
+                Ok(true)
+            }
+            false => Ok(false),
+        }
+    }
+
     fn check_height(tip: &Block, block: &Block) -> Result<(), ChainError> {
         (block.height == tip.height + 1)
             .then_some(())
