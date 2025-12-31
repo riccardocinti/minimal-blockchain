@@ -1,6 +1,7 @@
 use crate::blockchain::chain::Blockchain;
 use crate::storage::file;
 use clap::{Parser, Subcommand};
+use std::path::Path;
 
 #[derive(Parser)]
 pub struct Cli {
@@ -21,9 +22,10 @@ impl Cli {
         match self.command {
             Commands::Init => {
                 println!("init-chain");
-                let blockchain = file::load_chain();
-                if blockchain.blocks.is_empty() {
-                    file::save_chain(Blockchain::init().blocks.as_slice());
+                let chain_file = Path::new(file::CHAIN_FILE);
+                let blockchain = file::load_chain(chain_file);
+                if blockchain.unwrap().blocks.is_empty() {
+                    file::save_chain(chain_file, Blockchain::init().blocks.as_slice());
                 }
             }
             Commands::AddTxt { payload } => {
@@ -32,8 +34,8 @@ impl Cli {
             Commands::Mine => println!("mine-block"),
             Commands::Print => {
                 println!("print-chain");
-                let blockchain = file::load_chain();
-                let blocks = blockchain.blocks;
+                let blockchain = file::load_chain(Path::new(file::CHAIN_FILE));
+                let blocks = blockchain.unwrap().blocks;
                 if !blocks.is_empty() {
                     println!("{}", blocks.last().unwrap().previous_hash);
                 }

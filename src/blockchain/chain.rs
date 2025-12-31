@@ -1,4 +1,5 @@
 use crate::blockchain::block::Block;
+use crate::storage::file;
 
 pub struct Blockchain {
     pub blocks: Vec<Block>,
@@ -44,6 +45,17 @@ impl Blockchain {
         Ok(())
     }
 
+    pub fn save_to_file(&self, path: &std::path::Path) -> Result<(), ChainError> {
+        file::save_chain(path, &self.blocks);
+        Ok(())
+    }
+
+    pub fn load_from_file(path: &std::path::Path) -> Result<Self, ChainError> {
+        let chain = file::load_chain(path)?;
+        Self::validate(&chain)?;
+        Ok(chain)
+    }
+
     fn check_height(tip: &Block, block: &Block) -> Result<(), ChainError> {
         (block.height == tip.height + 1)
             .then_some(())
@@ -69,6 +81,7 @@ impl Blockchain {
     }
 }
 
+#[derive(Debug)]
 pub enum ChainError {
     InvalidHeight,
     InvalidPreviousHash,
@@ -76,6 +89,10 @@ pub enum ChainError {
     GenesisAlreadyExists,
     EmptyChain,
     InvalidGenesis,
+    IoError,
+    SerializationError,
+    DeserializationError,
+    InvalidPersistedChain,
 }
 
 #[cfg(test)]
