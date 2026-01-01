@@ -1,4 +1,5 @@
 use crate::blockchain::block::Block;
+use crate::blockchain::mempool::Mempool;
 use crate::storage::file;
 
 pub struct Blockchain {
@@ -67,6 +68,26 @@ impl Blockchain {
         }
     }
 
+    pub fn assemble_block(&mut self, mempool: &mut Mempool) -> Result<Block, ChainError> {
+        let most_recent_block = self.tip();
+        let mempool_transactions = mempool.peek();
+
+        if mempool_transactions.is_empty() {
+            return Err(ChainError::EmptyMempool);
+        }
+
+        let block = Block::new(
+            most_recent_block.height + 1,
+            most_recent_block.block_hash.clone(),
+            mempool_transactions,
+        );
+
+        self.append_block(block.clone())?;
+        mempool.drain();
+
+        Ok(block)
+    }
+
     fn check_height(tip: &Block, block: &Block) -> Result<(), ChainError> {
         (block.height == tip.height + 1)
             .then_some(())
@@ -104,6 +125,7 @@ pub enum ChainError {
     SerializationError,
     DeserializationError,
     InvalidPersistedChain,
+    EmptyMempool,
 }
 
 #[cfg(test)]
