@@ -8,8 +8,8 @@ fn tx(data: &[u8]) -> Transaction {
 fn valid_chain_passes_validation() {
     let mut chain = Blockchain::init();
 
-    let b1 = Block::new(1, chain.tip().block_hash.clone(), vec![tx(b"a")]);
-    let b2 = Block::new(2, b1.block_hash.clone(), vec![tx(b"b")]);
+    let b1 = Block::mine(&chain.tip(), vec![tx(b"a")], 2);
+    let b2 = Block::mine(&b1, vec![tx(b"b")], 2);
 
     chain.blocks.push(b1);
     chain.blocks.push(b2);
@@ -21,7 +21,7 @@ fn valid_chain_passes_validation() {
 fn chain_with_invalid_height_fails() {
     let mut chain = Blockchain::init();
 
-    let b1 = Block::new(2, chain.tip().block_hash.clone(), vec![tx(b"a")]);
+    let b1 = Block::new(2, chain.tip().block_hash.clone(), vec![tx(b"a")], 0, 2);
 
     chain.blocks.push(b1);
 
@@ -32,7 +32,7 @@ fn chain_with_invalid_height_fails() {
 fn chain_with_broken_hash_link_fails() {
     let mut chain = Blockchain::init();
 
-    let b1 = Block::new(1, "fake".into(), vec![tx(b"a")]);
+    let b1 = Block::new(1, "fake".into(), vec![tx(b"a")], 0, 2);
 
     chain.blocks.push(b1);
 
@@ -43,7 +43,7 @@ fn chain_with_broken_hash_link_fails() {
 fn chain_with_tampered_block_fails() {
     let mut chain = Blockchain::init();
 
-    let mut b1 = Block::new(1, chain.tip().block_hash.clone(), vec![tx(b"a")]);
+    let mut b1 = Block::new(1, chain.tip().block_hash.clone(), vec![tx(b"a")], 0, 2);
     b1.block_hash = "evil".into();
 
     chain.blocks.push(b1);
@@ -53,7 +53,7 @@ fn chain_with_tampered_block_fails() {
 
 #[test]
 fn empty_chain_is_invalid() {
-    let chain = Blockchain { blocks: vec![] };
+    let chain = Blockchain::load(vec![]);
 
     assert!(chain.validate().is_err());
 }

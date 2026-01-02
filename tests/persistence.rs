@@ -17,8 +17,8 @@ fn temp_file(name: &str) -> PathBuf {
 fn saved_and_loaded_chain_is_identical() {
     let mut chain = Blockchain::init();
 
-    let b1 = Block::new(1, chain.tip().block_hash.clone(), vec![tx(b"a")]);
-    let b2 = Block::new(2, b1.block_hash.clone(), vec![tx(b"b")]);
+    let b1 = Block::mine(&chain.tip(), vec![tx(b"a")], 2);
+    let b2 = Block::mine(&b1, vec![tx(b"b")], 2);
 
     chain.blocks.push(b1);
     chain.blocks.push(b2);
@@ -49,7 +49,7 @@ fn loading_invalid_chain_fails() {
 fn loading_tampered_chain_fails_validation() {
     let mut chain = Blockchain::init();
 
-    let mut b1 = Block::new(1, chain.tip().block_hash.clone(), vec![tx(b"a")]);
+    let mut b1 = Block::new(1, chain.tip().block_hash.clone(), vec![tx(b"a")], 0, 2);
     b1.block_hash = "evil".into();
 
     chain.blocks.push(b1);

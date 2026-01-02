@@ -8,13 +8,13 @@ fn tx(data: &[u8]) -> Transaction {
 fn longer_valid_chain_replaces_current() {
     let mut local = Blockchain::init();
 
-    let b1 = Block::new(1, local.tip().block_hash.clone(), vec![tx(b"a")]);
+    let b1 = Block::mine(&local.tip(), vec![tx(b"a")], 2);
     local.blocks.push(b1.clone());
 
     let mut candidate = Blockchain::init();
     candidate.blocks.push(b1);
 
-    let b2 = Block::new(2, candidate.tip().block_hash.clone(), vec![tx(b"b")]);
+    let b2 = Block::mine(&candidate.tip(), vec![tx(b"b")], 2);
     candidate.blocks.push(b2);
 
     let replaced = local.try_replace(candidate).unwrap();
@@ -27,7 +27,7 @@ fn longer_valid_chain_replaces_current() {
 fn shorter_chain_is_rejected() {
     let mut local = Blockchain::init();
 
-    let b1 = Block::new(1, local.tip().block_hash.clone(), vec![tx(b"a")]);
+    let b1 = Block::new(1, local.tip().block_hash.clone(), vec![tx(b"a")], 0, 2);
     local.blocks.push(b1.clone());
 
     let candidate = Blockchain::init(); // shorter
@@ -43,7 +43,7 @@ fn invalid_chain_is_rejected_with_error() {
     let mut local = Blockchain::init();
 
     let mut candidate = Blockchain::init();
-    let mut bad = Block::new(1, candidate.tip().block_hash.clone(), vec![tx(b"a")]);
+    let mut bad = Block::new(1, candidate.tip().block_hash.clone(), vec![tx(b"a")], 0, 2);
     bad.block_hash = "evil".into();
 
     candidate.blocks.push(bad);

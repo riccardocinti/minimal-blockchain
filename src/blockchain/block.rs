@@ -1,6 +1,6 @@
 use crate::blockchain::transaction::Transaction;
+use crate::crypto::hash::sha256;
 use serde::{Deserialize, Serialize};
-use std::hash::{Hash, Hasher};
 
 const GENESIS_BLOCK_HASH: &str = "GENESIS";
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
@@ -10,7 +10,8 @@ pub struct Block {
     // pub timestamp: u64,
     // pub merkle_root: String,
     pub transactions: Vec<Transaction>,
-    // pub nonce: u64,
+    pub nonce: u64,
+    pub difficulty: usize,
     pub block_hash: String,
 }
 
@@ -21,9 +22,10 @@ impl Block {
         // timestamp: u64,
         // merkle_root: String,
         transactions: Vec<Transaction>,
-        // nonce: u64,
+        nonce: u64,
+        difficulty: usize,
     ) -> Block {
-        let block_hash = Self::compute_hash(&height, &previous_hash, &transactions);
+        let block_hash = Self::compute_hash(&height, &previous_hash, &transactions, &nonce);
 
         Block {
             height,
@@ -31,7 +33,8 @@ impl Block {
             // timestamp,
             // merkle_root,
             transactions,
-            // nonce,
+            nonce,
+            difficulty,
             block_hash,
         }
     }
@@ -43,25 +46,64 @@ impl Block {
             // timestamp: 0,
             // merkle_root: String::from(""),
             transactions: vec![],
-            // nonce: 0,
+            nonce: 0,
+            difficulty: 0,
             block_hash: String::from(""),
         }
     }
 
     pub fn is_hash_valid(&self) -> bool {
-        self.block_hash == Self::compute_hash(&self.height, &self.previous_hash, &self.transactions)
+        self.block_hash
+            == Self::compute_hash(
+                &self.height,
+                &self.previous_hash,
+                &self.transactions,
+                &self.nonce,
+            )
+    }
+
+    pub fn mine(prev_block: &Block, transactions: Vec<Transaction>, difficulty: usize) -> Block {
+        let mut nonce = 0;
+
+        loop {
+            let block = Block::new(
+                prev_block.height + 1,
+                prev_block.block_hash.clone(),
+                transactions.clone(),
+                nonce,
+                difficulty,
+            );
+
+            if block.is_pow_valid(difficulty) {
+                return block;
+            }
+            nonce += 1;
+        }
+    }
+
+    pub fn is_pow_valid(&self, difficulty: usize) -> bool {
+        self.block_hash[..difficulty].chars().all(|c| c == '0')
     }
 
     fn compute_hash(
         height: &u64,
         previous_hash: &String,
         transactions: &Vec<Transaction>,
+        nonce: &u64,
     ) -> String {
-        let mut hasher = std::collections::hash_map::DefaultHasher::new();
-        height.hash(&mut hasher);
-        previous_hash.hash(&mut hasher);
-        transactions.hash(&mut hasher);
-        format!("{:x}", hasher.finish())
+        let mut bytes = Vec::new();
+        bytes.extend_from_slice(&height.to_be_bytes());
+        bytes.extend_from_slice(previous_hash.as_bytes());
+
+        for tx in transactions {
+            bytes.extend_from_slice(tx.tx_id.as_bytes());
+            bytes.extend_from_slice(&(tx.payload.len() as u64).to_be_bytes());
+            bytes.extend_from_slice(&tx.payload);
+        }
+
+        bytes.extend_from_slice(&nonce.to_be_bytes());
+
+        sha256(&bytes)
     }
 }
 
@@ -74,7 +116,7 @@ mod tests {
     }
 
     fn sample_block() -> Block {
-        Block::new(1, "prev_hash".to_string(), vec![tx(b"a"), tx(b"b")])
+        Block::new(1, "prev_hash".to_string(), vec![tx(b"a"), tx(b"b")], 0, 2)
     }
 
     #[test]
@@ -132,6 +174,8 @@ mod tests {
             block.height,
             "modified".to_string(),
             block.transactions.clone(),
+            0,
+            2,
         );
 
         assert_ne!(
@@ -144,7 +188,7 @@ mod tests {
     fn changing_transaction_content_changes_block_hash() {
         let block1 = sample_block();
 
-        let block2 = Block::new(1, "prev_hash".to_string(), vec![tx(b"a"), tx(b"c")]);
+        let block2 = Block::new(1, "prev_hash".to_string(), vec![tx(b"a"), tx(b"c")], 0, 2);
 
         assert_ne!(
             block1.block_hash, block2.block_hash,
@@ -154,9 +198,9 @@ mod tests {
 
     #[test]
     fn changing_transaction_order_changes_block_hash() {
-        let block1 = Block::new(1, "prev_hash".to_string(), vec![tx(b"a"), tx(b"b")]);
+        let block1 = Block::new(1, "prev_hash".to_string(), vec![tx(b"a"), tx(b"b")], 0, 2);
 
-        let block2 = Block::new(1, "prev_hash".to_string(), vec![tx(b"b"), tx(b"a")]);
+        let block2 = Block::new(1, "prev_hash".to_string(), vec![tx(b"b"), tx(b"a")], 0, 2);
 
         assert_ne!(
             block1.block_hash, block2.block_hash,

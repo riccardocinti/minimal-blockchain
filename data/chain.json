@@ -3,6 +3,8 @@
     "height": 0,
     "previous_hash": "GENESIS",
     "transactions": [],
+    "nonce": 0,
+    "difficulty": 0,
     "block_hash": ""
   }
 ]

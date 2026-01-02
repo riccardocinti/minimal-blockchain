@@ -7,6 +7,12 @@ pub struct Blockchain {
 }
 
 impl Blockchain {
+    pub fn load(blocks: Vec<Block>) -> Self {
+        Self {
+            blocks,
+        }
+    }
+
     pub fn init() -> Self {
         Self {
             blocks: vec![Block::genesis()],
@@ -41,6 +47,9 @@ impl Blockchain {
             Self::check_height(prev, curr)?;
             Self::check_previous_hash(prev, curr)?;
             Self::check_block_hash(curr)?;
+            if !curr.is_pow_valid(curr.difficulty) {
+                return Err(ChainError::InvalidBlockHash);
+            }
         }
 
         Ok(())
@@ -59,7 +68,8 @@ impl Blockchain {
 
     pub fn try_replace(&mut self, candidate: Blockchain) -> Result<bool, ChainError> {
         candidate.validate()?;
-        match candidate.tip().height > self.tip().height {
+        match candidate.tip().height > self.tip().height
+        {
             true => {
                 self.blocks = candidate.blocks;
                 Ok(true)
@@ -80,12 +90,22 @@ impl Blockchain {
             most_recent_block.height + 1,
             most_recent_block.block_hash.clone(),
             mempool_transactions,
+            most_recent_block.nonce,
+            most_recent_block.difficulty,
         );
 
         self.append_block(block.clone())?;
         mempool.drain();
 
         Ok(block)
+    }
+
+    pub fn receive_block(&mut self, block: Block) -> Result<(), ChainError> {
+        self.append_block(block)
+    }
+
+    pub fn receive_chain(&mut self, chain: Blockchain) -> Result<bool, ChainError> {
+        self.try_replace(chain)
     }
 
     fn check_height(tip: &Block, block: &Block) -> Result<(), ChainError> {

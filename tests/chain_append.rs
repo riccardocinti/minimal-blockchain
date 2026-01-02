@@ -13,6 +13,8 @@ fn valid_block_is_appended() {
         last.height + 1,
         last.block_hash.clone(),
         vec![tx(b"a"), tx(b"b")],
+        0,
+        2,
     );
 
     assert!(
@@ -29,9 +31,11 @@ fn block_with_wrong_height_is_rejected() {
     let last = chain.blocks.last().unwrap();
 
     let block = Block::new(
-        last.height + 2, // ❌ wrong
+        last.height + 2,
         last.block_hash.clone(),
         vec![tx(b"a")],
+        0,
+        2,
     );
 
     assert!(
@@ -45,7 +49,13 @@ fn block_with_wrong_previous_hash_is_rejected() {
     let mut chain = Blockchain::init();
     let last = chain.blocks.last().unwrap();
 
-    let block = Block::new(last.height + 1, "fake_hash".to_string(), vec![tx(b"a")]);
+    let block = Block::new(
+        last.height + 1,
+        "fake_hash".to_string(),
+        vec![tx(b"a")],
+        0,
+        2,
+    );
 
     assert!(
         matches!(chain.append_block(block), Err(_)),
@@ -58,7 +68,13 @@ fn tampered_block_hash_is_rejected() {
     let mut chain = Blockchain::init();
     let last = chain.blocks.last().unwrap();
 
-    let mut block = Block::new(last.height + 1, last.block_hash.clone(), vec![tx(b"a")]);
+    let mut block = Block::new(
+        last.height + 1,
+        last.block_hash.clone(),
+        vec![tx(b"a")],
+        0,
+        2,
+    );
 
     // Simulate corruption
     block.block_hash = "evil".to_string();

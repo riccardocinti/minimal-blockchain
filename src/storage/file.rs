@@ -14,7 +14,7 @@ pub fn save_chain(path: &Path, chain: &[Block]) {
 pub fn load_chain(path: &Path) -> Result<Blockchain, ChainError> {
     let data = fs::read_to_string(path).unwrap_or_else(|_| "[]".to_string());
     match serde_json::from_str(&data) {
-        Ok(blocks) => Ok(Blockchain { blocks }),
+        Ok(blocks) => Ok(Blockchain::load(blocks)),
         Err(_) => Err(ChainError::DeserializationError),
     }
 }
@@ -37,7 +37,8 @@ mod tests {
             "Loaded chain must have exactly one block"
         );
         assert_eq!(
-            loaded.as_ref().unwrap().blocks[0].block_hash, chain.blocks[0].block_hash,
+            loaded.as_ref().unwrap().blocks[0].block_hash,
+            chain.blocks[0].block_hash,
             "Genesis block hash must survive persistence"
         );
     }
