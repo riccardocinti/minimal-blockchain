@@ -42,13 +42,11 @@ impl Block {
     pub fn genesis() -> Block {
         Block {
             height: 0,
-            previous_hash: String::from(GENESIS_BLOCK_HASH),
-            // timestamp: 0,
-            // merkle_root: String::from(""),
+            previous_hash: String::from(""),
             transactions: vec![],
             nonce: 0,
             difficulty: 0,
-            block_hash: String::from(""),
+            block_hash: String::from(GENESIS_BLOCK_HASH),
         }
     }
 
@@ -138,7 +136,7 @@ mod tests {
     fn genesis_block_has_fixed_previous_hash() {
         let genesis = Block::genesis();
         assert_eq!(
-            genesis.previous_hash, "GENESIS",
+            genesis.previous_hash, "",
             "Genesis block previous hash must be 0"
         );
     }
