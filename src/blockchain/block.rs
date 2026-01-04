@@ -25,7 +25,8 @@ impl Block {
         nonce: u64,
         difficulty: usize,
     ) -> Block {
-        let block_hash = Self::compute_hash(&height, &previous_hash, &transactions, &nonce);
+        let block_hash =
+            Self::compute_hash(&height, &previous_hash, &transactions, &nonce, &timestamp);
 
         Block {
             height,
@@ -58,6 +59,7 @@ impl Block {
                 &self.previous_hash,
                 &self.transactions,
                 &self.nonce,
+                &self.timestamp,
             )
     }
 
@@ -95,6 +97,7 @@ impl Block {
         previous_hash: &String,
         transactions: &Vec<Transaction>,
         nonce: &u64,
+        timestamp: &u64,
     ) -> String {
         let mut bytes = Vec::new();
         bytes.extend_from_slice(&height.to_be_bytes());
@@ -107,6 +110,7 @@ impl Block {
         }
 
         bytes.extend_from_slice(&nonce.to_be_bytes());
+        bytes.extend_from_slice(&timestamp.to_be_bytes());
 
         sha256(&bytes)
     }
