@@ -53,6 +53,15 @@ impl Node {
         Ok(())
     }
 
+    pub fn run(&mut self, n_tick: usize) -> Result<(), NodeError> {
+        if self.node_config.mining_enabled {
+            for _ in 1 ..= n_tick  {
+                self.tick()?;
+            }
+        }
+        Ok(())
+    }
+
     fn next_difficulty(&self) -> usize {
         let last_block = self.chain.tip();
 
