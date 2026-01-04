@@ -10,7 +10,12 @@ fn tx(data: &[u8]) -> Transaction {
 
 #[test]
 fn node_creation_successful() {
-    let node = Node::new(Blockchain::init(), Mempool::new(), NodeConfig::new(false));
+    let node = Node::new(
+        Blockchain::init(),
+        Mempool::new(),
+        NodeConfig::new(false, 2, 1),
+        1,
+    );
 
     assert_eq!(node.mempool.len(), 0);
     assert_eq!(node.chain().tip().block_hash, "GENESIS");
@@ -18,7 +23,12 @@ fn node_creation_successful() {
 
 #[test]
 fn transaction_is_submitted_to_mempool() {
-    let mut node = Node::new(Blockchain::init(), Mempool::new(), NodeConfig::new(false));
+    let mut node = Node::new(
+        Blockchain::init(),
+        Mempool::new(),
+        NodeConfig::new(false, 2, 1),
+        1,
+    );
 
     node.submit_transaction(tx(b"hello block"));
 
@@ -28,7 +38,12 @@ fn transaction_is_submitted_to_mempool() {
 
 #[test]
 fn tick_does_nothing_for_empty_mempool() {
-    let mut node = Node::new(Blockchain::init(), Mempool::new(), NodeConfig::new(false));
+    let mut node = Node::new(
+        Blockchain::init(),
+        Mempool::new(),
+        NodeConfig::new(false, 2, 1),
+        1,
+    );
 
     node.tick().unwrap();
 
@@ -38,7 +53,12 @@ fn tick_does_nothing_for_empty_mempool() {
 
 #[test]
 fn tick_creates_block_for_non_empty_mempool() {
-    let mut node = Node::new(Blockchain::init(), Mempool::new(), NodeConfig::new(true));
+    let mut node = Node::new(
+        Blockchain::init(),
+        Mempool::new(),
+        NodeConfig::new(true, 2, 1),
+        1,
+    );
     node.submit_transaction(tx(b"hello block"));
 
     node.tick().unwrap();

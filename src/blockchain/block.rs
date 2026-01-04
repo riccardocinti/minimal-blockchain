@@ -7,7 +7,7 @@ const GENESIS_BLOCK_HASH: &str = "GENESIS";
 pub struct Block {
     pub height: u64,
     pub previous_hash: String,
-    // pub timestamp: u64,
+    pub timestamp: u64, //declared creation time
     // pub merkle_root: String,
     pub transactions: Vec<Transaction>,
     pub nonce: u64,
@@ -19,7 +19,7 @@ impl Block {
     pub fn new(
         height: u64,
         previous_hash: String,
-        // timestamp: u64,
+        timestamp: u64,
         // merkle_root: String,
         transactions: Vec<Transaction>,
         nonce: u64,
@@ -30,7 +30,7 @@ impl Block {
         Block {
             height,
             previous_hash,
-            // timestamp,
+            timestamp,
             // merkle_root,
             transactions,
             nonce,
@@ -43,6 +43,7 @@ impl Block {
         Block {
             height: 0,
             previous_hash: String::from(""),
+            timestamp: 0,
             transactions: vec![],
             nonce: 0,
             difficulty: 0,
@@ -60,13 +61,19 @@ impl Block {
             )
     }
 
-    pub fn mine(prev_block: &Block, transactions: Vec<Transaction>, difficulty: usize) -> Block {
+    pub fn mine(
+        prev_block: &Block,
+        transactions: Vec<Transaction>,
+        difficulty: usize,
+        timestamp: u64,
+    ) -> Block {
         let mut nonce = 0;
 
         loop {
             let block = Block::new(
                 prev_block.height + 1,
                 prev_block.block_hash.clone(),
+                timestamp,
                 transactions.clone(),
                 nonce,
                 difficulty,
@@ -114,7 +121,14 @@ mod tests {
     }
 
     fn sample_block() -> Block {
-        Block::new(1, "prev_hash".to_string(), vec![tx(b"a"), tx(b"b")], 0, 2)
+        Block::new(
+            1,
+            "prev_hash".to_string(),
+            0,
+            vec![tx(b"a"), tx(b"b")],
+            0,
+            2,
+        )
     }
 
     #[test]
@@ -171,6 +185,7 @@ mod tests {
         let modified = Block::new(
             block.height,
             "modified".to_string(),
+            block.timestamp,
             block.transactions.clone(),
             0,
             2,
@@ -186,7 +201,14 @@ mod tests {
     fn changing_transaction_content_changes_block_hash() {
         let block1 = sample_block();
 
-        let block2 = Block::new(1, "prev_hash".to_string(), vec![tx(b"a"), tx(b"c")], 0, 2);
+        let block2 = Block::new(
+            1,
+            "prev_hash".to_string(),
+            block1.timestamp + 1,
+            vec![tx(b"a"), tx(b"c")],
+            0,
+            2,
+        );
 
         assert_ne!(
             block1.block_hash, block2.block_hash,
@@ -196,9 +218,23 @@ mod tests {
 
     #[test]
     fn changing_transaction_order_changes_block_hash() {
-        let block1 = Block::new(1, "prev_hash".to_string(), vec![tx(b"a"), tx(b"b")], 0, 2);
+        let block1 = Block::new(
+            1,
+            "prev_hash".to_string(),
+            0,
+            vec![tx(b"a"), tx(b"b")],
+            0,
+            2,
+        );
 
-        let block2 = Block::new(1, "prev_hash".to_string(), vec![tx(b"b"), tx(b"a")], 0, 2);
+        let block2 = Block::new(
+            1,
+            "prev_hash".to_string(),
+            1,
+            vec![tx(b"b"), tx(b"a")],
+            0,
+            2,
+        );
 
         assert_ne!(
             block1.block_hash, block2.block_hash,

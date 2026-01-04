@@ -47,6 +47,7 @@ impl Blockchain {
             Self::check_height(prev, curr)?;
             Self::check_previous_hash(prev, curr)?;
             Self::check_block_hash(curr)?;
+            Self::check_timestamp(prev, curr)?;
             if !curr.is_pow_valid(curr.difficulty) {
                 return Err(ChainError::InvalidBlockHash);
             }
@@ -89,6 +90,7 @@ impl Blockchain {
         let block = Block::new(
             most_recent_block.height + 1,
             most_recent_block.block_hash.clone(),
+            most_recent_block.timestamp + 1,
             mempool_transactions,
             most_recent_block.nonce,
             most_recent_block.difficulty,
@@ -131,6 +133,14 @@ impl Blockchain {
             .then_some(())
             .ok_or(ChainError::GenesisAlreadyExists)
     }
+
+    fn check_timestamp(block1: &Block, block2: &Block) -> Result<(), ChainError> {
+        (block1.timestamp < block2.timestamp)
+            .then_some(())
+            .ok_or(
+                ChainError::InvalidBlockTimestamp,
+            )
+    }
 }
 
 #[derive(Debug)]
@@ -139,6 +149,7 @@ pub enum ChainError {
     InvalidPreviousHash,
     InvalidBlockHash,
     GenesisAlreadyExists,
+    InvalidBlockTimestamp,
     EmptyChain,
     InvalidGenesis,
     IoError,

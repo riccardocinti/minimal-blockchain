@@ -12,6 +12,7 @@ fn valid_block_is_appended() {
     let block = Block::new(
         last.height + 1,
         last.block_hash.clone(),
+        0,
         vec![tx(b"a"), tx(b"b")],
         0,
         2,
@@ -33,6 +34,7 @@ fn block_with_wrong_height_is_rejected() {
     let block = Block::new(
         last.height + 2,
         last.block_hash.clone(),
+        0,
         vec![tx(b"a")],
         0,
         2,
@@ -52,6 +54,7 @@ fn block_with_wrong_previous_hash_is_rejected() {
     let block = Block::new(
         last.height + 1,
         "fake_hash".to_string(),
+        0,
         vec![tx(b"a")],
         0,
         2,
@@ -71,6 +74,7 @@ fn tampered_block_hash_is_rejected() {
     let mut block = Block::new(
         last.height + 1,
         last.block_hash.clone(),
+        0,
         vec![tx(b"a")],
         0,
         2,

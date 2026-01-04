@@ -7,7 +7,7 @@ fn valid_pow_block_is_accepted() {
     let mut chain = Blockchain::init();
     let tx = Transaction::new(b"hello".to_vec());
 
-    let block = Block::mine(chain.tip(), vec![tx], TEST_DIFFICULTY);
+    let block = Block::mine(chain.tip(), vec![tx], TEST_DIFFICULTY, 1);
 
     let result = chain.receive_block(block);
 
