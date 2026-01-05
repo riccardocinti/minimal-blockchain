@@ -14,6 +14,7 @@ fn setup_node(block_time_delta: u64) -> Node {
         mining_enabled: true,
         difficulty: INITIAL_DIFFICULTY,
         block_time_delta,
+        tick_interval: 10,
     };
 
     Node::new(chain, mempool, config, 1)

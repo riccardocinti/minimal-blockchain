@@ -4,6 +4,10 @@ use crate::blockchain::mempool::Mempool;
 use crate::blockchain::transaction::Transaction;
 pub use crate::node::node_config::NodeConfig;
 use std::cmp::Ordering;
+use std::io;
+use std::io::BufRead;
+use std::thread::sleep;
+use std::time::Duration;
 
 pub struct Node {
     chain: Blockchain,
@@ -36,7 +40,8 @@ impl Node {
     }
 
     pub fn tick(&mut self) -> Result<(), NodeError> {
-        if self.mempool.len() > 0 {
+        if self.node_config.mining_enabled && self.mempool.len() > 0 {
+            println!("Mining...");
             let timestamp = self.logical_time;
             let block = Block::mine(
                 &self.chain.tip(),
@@ -53,13 +58,20 @@ impl Node {
         Ok(())
     }
 
-    pub fn run(&mut self, n_tick: usize) -> Result<(), NodeError> {
-        if self.node_config.mining_enabled {
-            for _ in 1 ..= n_tick  {
-                self.tick()?;
-            }
+    pub fn run_tick(&mut self, n_tick: usize) -> Result<(), NodeError> {
+        for _ in 1..=n_tick {
+            self.tick()?;
         }
         Ok(())
+    }
+
+    pub fn run(&mut self) -> Result<(), NodeError> {
+        let mut lines = io::stdin().lock().lines();
+        loop {
+            println!("Tick...");
+            self.run_tick(1)?;
+            sleep(Duration::from_secs(self.node_config.tick_interval));
+        }
     }
 
     fn next_difficulty(&self) -> usize {

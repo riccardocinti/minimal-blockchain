@@ -8,9 +8,7 @@ pub struct Blockchain {
 
 impl Blockchain {
     pub fn load(blocks: Vec<Block>) -> Self {
-        Self {
-            blocks,
-        }
+        Self { blocks }
     }
 
     pub fn init() -> Self {
@@ -29,7 +27,9 @@ impl Blockchain {
         Self::check_block_hash(&block)?;
         Self::check_not_genesis(&block, &self.blocks[0])?;
 
+        println!("Block: {:?}", &block);
         self.blocks.push(block);
+
         Ok(())
     }
 
@@ -69,8 +69,7 @@ impl Blockchain {
 
     pub fn try_replace(&mut self, candidate: Blockchain) -> Result<bool, ChainError> {
         candidate.validate()?;
-        match candidate.tip().height > self.tip().height
-        {
+        match candidate.tip().height > self.tip().height {
             true => {
                 self.blocks = candidate.blocks;
                 Ok(true)
@@ -137,9 +136,7 @@ impl Blockchain {
     fn check_timestamp(block1: &Block, block2: &Block) -> Result<(), ChainError> {
         (block1.timestamp < block2.timestamp)
             .then_some(())
-            .ok_or(
-                ChainError::InvalidBlockTimestamp,
-            )
+            .ok_or(ChainError::InvalidBlockTimestamp)
     }
 }
 
