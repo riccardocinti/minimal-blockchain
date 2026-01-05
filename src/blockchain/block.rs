@@ -1,5 +1,5 @@
 use crate::blockchain::transaction::Transaction;
-use crate::crypto::hash::sha256;
+use crate::blockchain::hash::sha256;
 use serde::{Deserialize, Serialize};
 
 const GENESIS_BLOCK_HASH: &str = "GENESIS";

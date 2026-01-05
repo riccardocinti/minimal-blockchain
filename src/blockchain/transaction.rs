@@ -1,4 +1,4 @@
-use crate::crypto::hash::sha256;
+use crate::blockchain::hash::sha256;
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]

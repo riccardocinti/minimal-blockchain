@@ -4,8 +4,6 @@ use crate::blockchain::mempool::Mempool;
 use crate::blockchain::transaction::Transaction;
 pub use crate::node::node_config::NodeConfig;
 use std::cmp::Ordering;
-use std::io;
-use std::io::BufRead;
 use std::thread::sleep;
 use std::time::Duration;
 
@@ -66,7 +64,6 @@ impl Node {
     }
 
     pub fn run(&mut self) -> Result<(), NodeError> {
-        let mut lines = io::stdin().lock().lines();
         loop {
             println!("Tick...");
             self.run_tick(1)?;
