@@ -2,8 +2,10 @@ use crate::blockchain::block::Block;
 use crate::blockchain::chain::Blockchain;
 use crate::blockchain::mempool::Mempool;
 use crate::blockchain::transaction::Transaction;
+use crate::node::ipc;
 pub use crate::node::node_config::NodeConfig;
 use std::cmp::Ordering;
+use std::path::Path;
 use std::thread::sleep;
 use std::time::Duration;
 
@@ -64,9 +66,16 @@ impl Node {
     }
 
     pub fn run(&mut self) -> Result<(), NodeError> {
+        let tx_pool_dir = Path::new("tx_pool");
+
         loop {
             println!("Tick...");
+
+            let _stats = ipc::ingest_ipc_transactions(self, tx_pool_dir)
+                .map_err(|_| NodeError::ChainError)?;
+
             self.run_tick(1)?;
+
             sleep(Duration::from_secs(self.node_config.tick_interval));
         }
     }
